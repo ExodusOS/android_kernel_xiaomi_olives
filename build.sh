@@ -63,12 +63,16 @@ case $TYPE in nightly|stable);; *)TYPE=experimental;; esac
 
 KERN_VER=$(echo "$(make kernelversion)")
 BUILD_DATE=$(date '+%Y-%m-%d  %H:%M')
-DEVICE="Redmi 8"
+DEVICE="Redmi 8/8a/8a dual"
 KERNELNAME="Chidori-Kernel-$TYPE"
-ZIPNAME="Chidori-Kernel-olive-$(date '+%Y%m%d%H%M')-$TYPE.zip"
+if $miui; then
+ZIPNAME="Chidori-Kernel-MIUI-olive-$(date '+%Y%m%d%H%M')-$TYPE.zip"
+else
+ZIPNAME="Chidori-Kernel-olives-$(date '+%Y%m%d%H%M')-$TYPE.zip"
+fi
 TC_DIR="$HOME/toolchains/proton-clang"
 DEFCONFIG="olive-perf_defconfig"
-sed -i "1s/.*/CONFIG_LOCALVERSION=\"-${KERNELNAME}\"/g" arch/arm64/configs/$DEFCONFIG
+sed -i "48s/.*/CONFIG_LOCALVERSION=\"-${KERNELNAME}\"/g" arch/arm64/configs/$DEFCONFIG
 
 export PATH="$TC_DIR/bin:$PATH"
 export KBUILD_BUILD_USER="melles1991"
@@ -134,7 +138,7 @@ fi
 push_message() {
     curl -s -X POST \
         https://api.telegram.org/bot1472514287:AAG9kYDURtPvQLM9RXN_zv4h79CIbRCPuPw/sendMessage \
-        -d chat_id="-1001452770277" \
+        -d chat_id="-1001209604560" \
         -d text="$1" \
         -d "parse_mode=html" \
         -d "disable_web_page_preview=true"
@@ -143,7 +147,7 @@ push_message() {
 push_document() {
     curl -s -X POST \
         https://api.telegram.org/bot1472514287:AAG9kYDURtPvQLM9RXN_zv4h79CIbRCPuPw/sendDocument \
-        -F chat_id="-1001452770277" \
+        -F chat_id="-1001209604560" \
         -F document=@"$1" \
         -F caption="$2" \
         -F "parse_mode=html" \
@@ -157,8 +161,8 @@ make O=out ARCH=arm64 $DEFCONFIG
 
 if $regen; then
 	cp out/.config arch/arm64/configs/$DEFCONFIG
-	sed -i "1s/.*/CONFIG_LOCALVERSION=\"-Chidori-Kernel\"/g" arch/arm64/configs/$DEFCONFIG
-	git commit -am "defconfig: olive: Regenerate" --signoff
+	sed -i "48s/.*/CONFIG_LOCALVERSION=\"-Chidori-Kernel\"/g" arch/arm64/configs/$DEFCONFIG
+	git commit -am "defconfig: olives: Regenerate" --signoff
 	echo -e "$grn \nRegened defconfig succesfully!\n $nocol"
 	make mrproper
 	echo -e "$grn \nCleaning was successful succesfully!\n $nocol"
@@ -192,7 +196,7 @@ if [ -f "$kernel" ] && [ -f "$dtbo" ]; then
 	echo -e "$blue    \nKernel compiled succesfully! Zipping up...\n $nocol"
 	if ! [ -d "AnyKernel3" ]; then
 		echo -e "$grn \nAnyKernel3 not found! Cloning...\n $nocol"
-		if ! git clone https://github.com/CraftRom/AnyKernel3 -b olive AnyKernel3; then
+		if ! git clone https://github.com/CraftRom/AnyKernel3 -b olives AnyKernel3; then
 			echo -e "$grn \nCloning failed! Aborting...\n $nocol"
 		fi
 	fi
@@ -212,7 +216,6 @@ if [ -f "$kernel" ] && [ -f "$dtbo" ]; then
 	if ! $do_not_send_to_tg; then
 		push_document "$ZIPNAME" "
 		<b>CHIDORI KERNEL | $DEVICE</b>
-
 		New update available!
 		
 		<i>${DESC:-No description given...}</i>
@@ -223,17 +226,18 @@ if [ -f "$kernel" ] && [ -f "$dtbo" ]; then
 		<b>BuildDate:</b> <code>$BUILD_DATE</code>
 		<b>Filename:</b> <code>$ZIPNAME</code>
 		<b>md5 checksum :</b> <code>$(md5sum "$ZIPNAME" | cut -d' ' -f1)</code>
-
-		#olive #onc #kernel"
+		
+		#olive #olivelite #olivewood #olives #kernel"
 
 		echo -e "$grn \n\n(i)          Send to telegram succesfully!\n $nocol"
 	fi
 
 	# TEMP
-	sed -i "51s/-experimental//" arch/arm64/configs/$DEFCONFIG
+	sed -i "48s/-experimental//" arch/arm64/configs/$DEFCONFIG
 else
 	echo -e "$red \nKernel Compilation failed! Fix the errors!\n $nocol"
 	# Push message if build error
 	push_message "$BUILDER! <b>Failed building kernel for <code>$DEVICE</code> Please fix it...!</b>"
+		sleep 4
 	exit 1
 fi
