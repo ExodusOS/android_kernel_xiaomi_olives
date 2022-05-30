@@ -63,7 +63,7 @@ case $TYPE in nightly|stable);; *)TYPE=experimental;; esac
 
 KERN_VER=$(echo "$(make kernelversion)")
 BUILD_DATE=$(date '+%Y-%m-%d  %H:%M')
-DEVICE="Redmi 8/8a/8a dual"
+DEVICE="Redmi 7a/8/8a/8a dual"
 KERNELNAME="Chidori-Kernel-$TYPE"
 if $miui; then
 ZIPNAME="Chidori-Kernel-MIUI-olive-$(date '+%Y%m%d%H%M')-$TYPE.zip"
@@ -227,7 +227,7 @@ if [ -f "$kernel" ] && [ -f "$dtbo" ]; then
 		<b>Filename:</b> <code>$ZIPNAME</code>
 		<b>md5 checksum :</b> <code>$(md5sum "$ZIPNAME" | cut -d' ' -f1)</code>
 		
-		#olive #olivelite #olivewood #olives #kernel"
+		#olive #olivelite #olivewood #olives #pine #kernel"
 
 		echo -e "$grn \n\n(i)          Send to telegram succesfully!\n $nocol"
 	fi
